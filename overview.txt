@@ -1,0 +1,5 @@
+This is an overview of the steps taken to process and mine the "recovering the classics epubs 50" made available as part of the CODEX Hackathon 2016.
+
+1. Classic novel .epub files were downloaded from the CODEX Hackathon website, and converted to .txt files using the Zamzar online conversion tool.
+
+
