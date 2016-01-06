@@ -2,4 +2,7 @@ This is an overview of the steps taken to process and mine the "recovering the c
 
 1. Classic novel .epub files were downloaded from the CODEX Hackathon website, and converted to .txt files using the Zamzar online conversion tool.
 
+2. Novel text was edited to remove prefaces, author's notes, introductions, tables of contents, chapter headings, and anything else that did not consitute the main body of the novel.
+
+3.
 
