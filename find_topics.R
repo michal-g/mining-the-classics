@@ -6,6 +6,8 @@ source('novel_code.R');
 # gets a keyword corresponding to a novel title from the command line
 args <- commandArgs(TRUE);
 novel.title <- as.character(args[1]);
+chunk.size <- 250;
+chunk.res <- 2;
 
 # finds the converted file matching the keyword, makes sure there's exactly one such file
 novel.file <- list.files(path = novel.folder, pattern = "Time Machine", full.names = TRUE);
@@ -18,11 +20,11 @@ if (length(novel.file) == 0) {
 # reads in the novel text, removes empty lines and chapter headings
 novel.text <- readLines(novel.file);
 novel.text <- novel.text[sapply(novel.text, nchar) > 0];
-novel.text <- novel.text[-grep("^[A-Z ]{3,}", novel.text)];
+novel.text <- novel.text[-grep("^CHAPTER", novel.text)];
 novel.text <- paste(novel.text, collapse = ' ');
 
 # breaks the novel text into overlapping chunks and creates a document term matrix
-text.chunks <- chunk.text(novel.text, chunk.size = 250, chunk.res = 2);
+text.chunks <- chunk.text(novel.text, chunk.size = chunk.size, chunk.res = chunk.res);
 novel.corpus <- Corpus(VectorSource(text.chunks));
 term.mat <- DocumentTermMatrix(
 		x = novel.corpus,
@@ -36,5 +38,5 @@ term.mat <- DocumentTermMatrix(
 		);
 
 # removes words that only appear once in the text from the term matrix
-term.mat <- term.mat[ ,col_sums(term.mat) <= 2];
+term.mat <- term.mat[ ,col_sums(term.mat) > chunk.res];
 
