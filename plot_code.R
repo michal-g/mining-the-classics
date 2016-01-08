@@ -3,7 +3,7 @@
 library(ggplot2);
 library(reshape2);
 library(grid);
-library(plotly);
+library(shiny);
 library(stringdist);
 
 
@@ -43,7 +43,7 @@ plot.topic.posterior <- function(novel.lda, choose.terms = NULL, term.cutoff = 3
 	post.df$Location <- as.numeric(post.df$Location);
 	post.df$Topic <- as.factor(paste("Topic", post.df$Topic));
 
-	theme.size <- 160;
+	theme.size <- 16;
 	p <- ggplot(post.df) + geom_line(aes(x = Location, y = Posterior, group = Topic, colour = Topic, alpha = Status, size = Status));
 	p <- p + theme_bw();
 	p <- p + scale_x_continuous('Novel Location') + scale_y_continuous('Topic Importance');
@@ -76,9 +76,81 @@ plot.topic.posterior <- function(novel.lda, choose.terms = NULL, term.cutoff = 3
 		plot.margin = unit(c(0.025,0.025,0.03,0.03) * theme.size, 'cm'), legend.key = element_blank(), legend.position = 'top'
 		);
 
-	plot.file = "test.png";
-	png(filename = plot.file, height = 4500, width = 8500);
-	p;
+	ui <- fluidPage(
+		fluidRow(
+			column(
+				width = 12, class = "well", h4("Brush and double-click to zoom"),
+				plotOutput(
+					"plot1", height = 500, dblclick = "plot1_dblclick",
+					brush = brushOpts(
+							id = "plot1_brush",
+							resetOnNew = TRUE
+							)
+					)
+				)
+			),
+		fluidRow(
+			column(
+				width = 12, class = "well", h4("Left plot controls right plot"),
+				fluidRow(
+					column(
+						width = 6, class = "well",
+						plotOutput(
+							"plot2", height = 500,
+							brush = brushOpts(
+									id = "plot2_brush",
+									resetOnNew = TRUE
+									)
+							)
+						),
+					column(width = 6, class = "well", plotOutput("plot3", height = 500))
+					)
+				)
+			)
+		);
+
+	server <- function(input, output) {
+
+		ranges <- reactiveValues(x = NULL, y = NULL);
+		output$plot1 <- renderPlot(p + coord_cartesian(xlim = ranges$x, ylim = ranges$y));
+
+		# When a double-click happens, check if there's a brush on the plot.
+    		# If so, zoom to the brush bounds; if not, reset the zoom.
+		observeEvent(input$plot1_dblclick, {
+			brush <- input$plot1_brush
+
+			if (!is.null(brush)) {
+				ranges$x <- c(brush$xmin, brush$xmax)
+				ranges$y <- c(brush$ymin, brush$ymax)
+			} else {
+				ranges$x <- NULL
+				ranges$y <- NULL
+				}
+			});
+
+		# -------------------------------------------------------------------
+		# Linked plots (middle and right)
+		ranges2 <- reactiveValues(x = NULL, y = NULL);
+		output$plot2 <- renderPlot(p);
+		output$plot3 <- renderPlot(p + coord_cartesian(xlim = ranges2$x, ylim = ranges2$y));
+		
+		# When a double-click happens, check if there's a brush on the plot.
+		# If so, zoom to the brush bounds; if not, reset the zoom.
+		observe({
+			brush <- input$plot2_brush;
+			if (!is.null(brush)) {
+				ranges2$x <- c(brush$xmin, brush$xmax);
+				ranges2$y <- c(brush$ymin, brush$ymax);
+
+			} else {
+				ranges2$x <- NULL;
+			        ranges2$y <- NULL;
+				}
+			});
+
+		}
+
+	shinyApp(ui, server);
 	}
 
 
