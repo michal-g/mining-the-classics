@@ -3,6 +3,7 @@
 library(RTextTools);
 library(topicmodels);
 library(tm);
+library(slam);
 library(qdap);
 library(SnowballC);
 

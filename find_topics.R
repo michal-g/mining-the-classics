@@ -20,7 +20,8 @@ if (length(novel.file) == 0) {
 # reads in the novel text, removes empty lines and chapter headings
 novel.text <- readLines(novel.file);
 novel.text <- novel.text[sapply(novel.text, nchar) > 0];
-novel.text <- novel.text[-grep("^CHAPTER", novel.text)];
+chapter.index <- grep("^CHAPTER", novel.text);
+if (length(chapter.index)) novel.text <- novel.text[-chapter.index];
 novel.text <- paste(novel.text, collapse = ' ');
 
 # breaks the novel text into overlapping chunks and creates a document term matrix
